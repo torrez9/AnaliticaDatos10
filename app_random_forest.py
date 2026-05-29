@@ -6,6 +6,7 @@ import plotly.express as px
 from io import BytesIO
 import time
 
+
 # ==========================================================
 # COMPATIBILIDAD SCIKIT-LEARN
 # ==========================================================
@@ -610,6 +611,7 @@ def preparar_columnas_visuales(df):
 
 def agregar_ranking_abc(df, columna_valor="Venta_calculada"):
     df = df.copy()
+
     resumen = df.groupby("Servicio", as_index=False)[columna_valor].sum()
     resumen = resumen.sort_values(columna_valor, ascending=False)
 
@@ -635,7 +637,7 @@ def agregar_ranking_abc(df, columna_valor="Venta_calculada"):
     return resumen
 
 
-def mostrar_graficos_avanzados(df, titulo="Análisis visual avanzado"):
+def mostrar_graficos_avanzados(df, titulo="Análisis visual avanzado", key_prefix="graficos_avanzados"):
     df = preparar_columnas_visuales(df)
 
     st.markdown(f'<div class="section-title">{titulo}</div>', unsafe_allow_html=True)
@@ -676,7 +678,11 @@ def mostrar_graficos_avanzados(df, titulo="Análisis visual avanzado"):
             font_color="white"
         )
 
-        st.plotly_chart(fig_treemap, use_container_width=True)
+        st.plotly_chart(
+            fig_treemap,
+            use_container_width=True,
+            key=f"{key_prefix}_treemap"
+        )
 
         st.caption(
             "Este treemap muestra qué servicios o grupos aportan más ingresos. "
@@ -706,7 +712,11 @@ def mostrar_graficos_avanzados(df, titulo="Análisis visual avanzado"):
             legend_title_text="Servicio"
         )
 
-        st.plotly_chart(fig_dona, use_container_width=True)
+        st.plotly_chart(
+            fig_dona,
+            use_container_width=True,
+            key=f"{key_prefix}_dona"
+        )
 
         st.caption(
             "La dona permite observar la participación porcentual de cada servicio o grupo "
@@ -738,7 +748,11 @@ def mostrar_graficos_avanzados(df, titulo="Análisis visual avanzado"):
             xaxis_tickangle=-35
         )
 
-        st.plotly_chart(fig_ranking, use_container_width=True)
+        st.plotly_chart(
+            fig_ranking,
+            use_container_width=True,
+            key=f"{key_prefix}_ranking"
+        )
 
     with col_d:
         fig_abc = px.bar(
@@ -762,10 +776,18 @@ def mostrar_graficos_avanzados(df, titulo="Análisis visual avanzado"):
             xaxis_tickangle=-35
         )
 
-        st.plotly_chart(fig_abc, use_container_width=True)
+        st.plotly_chart(
+            fig_abc,
+            use_container_width=True,
+            key=f"{key_prefix}_abc"
+        )
 
     with st.expander("Ver tabla de ranking ABC"):
-        st.dataframe(ranking, use_container_width=True)
+        st.dataframe(
+            ranking,
+            use_container_width=True,
+            key=f"{key_prefix}_tabla_abc"
+        )
 
 
 # ==========================================================
@@ -916,7 +938,8 @@ if modo == "Predicción individual":
             with col_res2:
                 st.plotly_chart(
                     grafico_gauge(confianza_visual, "Confianza del análisis"),
-                    use_container_width=True
+                    use_container_width=True,
+                    key="individual_gauge_confianza"
                 )
 
             col_m1, col_m2, col_m3, col_m4 = st.columns(4)
@@ -973,7 +996,11 @@ if modo == "Predicción individual":
                     font_color="white"
                 )
 
-                st.plotly_chart(fig1, use_container_width=True)
+                st.plotly_chart(
+                    fig1,
+                    use_container_width=True,
+                    key="individual_bar_costo_venta_ganancia"
+                )
 
             with col_g2:
                 df_precios = pd.DataFrame({
@@ -997,7 +1024,11 @@ if modo == "Predicción individual":
                     font_color="white"
                 )
 
-                st.plotly_chart(fig2, use_container_width=True)
+                st.plotly_chart(
+                    fig2,
+                    use_container_width=True,
+                    key="individual_bar_composicion_precio"
+                )
 
             df_visual = pd.DataFrame({
                 "Servicio": [
@@ -1038,10 +1069,14 @@ if modo == "Predicción individual":
                 ]
             })
 
-            mostrar_graficos_avanzados(df_visual, "Treemap y distribución visual del resultado")
+            mostrar_graficos_avanzados(
+                df_visual,
+                "Treemap y distribución visual del resultado",
+                key_prefix="individual_visual"
+            )
 
             with st.expander("Ver datos enviados al modelo"):
-                st.dataframe(datos_modelo, use_container_width=True)
+                st.dataframe(datos_modelo, use_container_width=True, key="individual_datos_modelo")
 
         except Exception as e:
             st.error("Ocurrió un error al realizar la predicción.")
@@ -1281,7 +1316,11 @@ elif modo == "What If individual":
             font_color="white"
         )
 
-        st.plotly_chart(fig_scatter, use_container_width=True)
+        st.plotly_chart(
+            fig_scatter,
+            use_container_width=True,
+            key="whatif_individual_scatter_descuento_ganancia"
+        )
 
         fig_heatmap = px.density_heatmap(
             df_what_if,
@@ -1299,7 +1338,11 @@ elif modo == "What If individual":
             font_color="white"
         )
 
-        st.plotly_chart(fig_heatmap, use_container_width=True)
+        st.plotly_chart(
+            fig_heatmap,
+            use_container_width=True,
+            key="whatif_individual_heatmap"
+        )
 
         resumen_estado = df_what_if["Estado_Comercial"].value_counts().reset_index()
         resumen_estado.columns = ["Estado_Comercial", "Cantidad"]
@@ -1313,19 +1356,26 @@ elif modo == "What If individual":
         )
 
         fig_pie.update_traces(textposition="inside", textinfo="percent+label")
-
         fig_pie.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             font_color="white"
         )
 
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(
+            fig_pie,
+            use_container_width=True,
+            key="whatif_individual_pie_estado_comercial"
+        )
 
-        mostrar_graficos_avanzados(df_what_if, "Treemap y dona del What If individual")
+        mostrar_graficos_avanzados(
+            df_what_if,
+            "Treemap y dona del What If individual",
+            key_prefix="whatif_individual_avanzado"
+        )
 
         st.markdown('<div class="section-title">Tabla de Escenarios Simulados</div>', unsafe_allow_html=True)
 
-        st.dataframe(df_what_if, use_container_width=True)
+        st.dataframe(df_what_if, use_container_width=True, key="whatif_individual_tabla")
 
         csv_what_if = df_what_if.to_csv(index=False).encode("utf-8")
         excel_what_if = convertir_excel(df_what_if)
@@ -1338,7 +1388,8 @@ elif modo == "What If individual":
                 data=csv_what_if,
                 file_name="what_if_individual.csv",
                 mime="text/csv",
-                use_container_width=True
+                use_container_width=True,
+                key="download_whatif_individual_csv"
             )
 
         with col_d2:
@@ -1347,7 +1398,8 @@ elif modo == "What If individual":
                 data=excel_what_if,
                 file_name="what_if_individual.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
+                use_container_width=True,
+                key="download_whatif_individual_excel"
             )
 
 
@@ -1367,7 +1419,8 @@ elif modo == "Predicción por CSV":
 
     archivo_csv = st.file_uploader(
         "Seleccione el archivo CSV",
-        type=["csv"]
+        type=["csv"],
+        key="uploader_csv_prediccion"
     )
 
     if archivo_csv is not None:
@@ -1378,7 +1431,7 @@ elif modo == "Predicción por CSV":
             st.success("Archivo CSV cargado correctamente.")
 
             st.subheader("Vista previa de la base cargada")
-            st.dataframe(df_csv.head(20), use_container_width=True)
+            st.dataframe(df_csv.head(20), use_container_width=True, key="csv_vista_previa")
 
             columnas_faltantes = [col for col in COLUMNAS_MODELO if col not in df_csv.columns]
 
@@ -1410,7 +1463,7 @@ elif modo == "Predicción por CSV":
             else:
                 df_modelo["Categoria"] = df_modelo["Estado"].astype(str)
 
-            if st.button("Procesar CSV con el modelo", use_container_width=True):
+            if st.button("Procesar CSV con el modelo", use_container_width=True, key="btn_procesar_csv"):
 
                 st.markdown('<div class="section-title">Procesando CSV</div>', unsafe_allow_html=True)
 
@@ -1458,7 +1511,6 @@ elif modo == "Predicción por CSV":
                 total_registros = len(df_resultados)
                 venta_total = df_resultados["Venta_calculada"].sum()
                 ganancia_total = df_resultados["Ganancia_estimada"].sum()
-                promedio_prediccion = df_resultados["Prediccion_Modelo"].mean()
                 margen_promedio = df_resultados["Margen_estimado"].mean()
 
                 col_csv1, col_csv2, col_csv3, col_csv4 = st.columns(4)
@@ -1515,13 +1567,16 @@ elif modo == "Predicción por CSV":
                     )
 
                     fig_estado.update_traces(textposition="inside", textinfo="percent+label")
-
                     fig_estado.update_layout(
                         paper_bgcolor="rgba(0,0,0,0)",
                         font_color="white"
                     )
 
-                    st.plotly_chart(fig_estado, use_container_width=True)
+                    st.plotly_chart(
+                        fig_estado,
+                        use_container_width=True,
+                        key="csv_pie_estado_comercial"
+                    )
 
                 with col_csv_g2:
                     fig_ganancia = px.histogram(
@@ -1537,7 +1592,11 @@ elif modo == "Predicción por CSV":
                         font_color="white"
                     )
 
-                    st.plotly_chart(fig_ganancia, use_container_width=True)
+                    st.plotly_chart(
+                        fig_ganancia,
+                        use_container_width=True,
+                        key="csv_hist_ganancia"
+                    )
 
                 fig_scatter = px.scatter(
                     df_resultados,
@@ -1561,9 +1620,17 @@ elif modo == "Predicción por CSV":
                     font_color="white"
                 )
 
-                st.plotly_chart(fig_scatter, use_container_width=True)
+                st.plotly_chart(
+                    fig_scatter,
+                    use_container_width=True,
+                    key="csv_scatter_precio_ganancia"
+                )
 
-                mostrar_graficos_avanzados(df_resultados, "Treemap, dona y análisis ABC por ingresos")
+                mostrar_graficos_avanzados(
+                    df_resultados,
+                    "Treemap, dona y análisis ABC por ingresos",
+                    key_prefix="csv_resultados_avanzado"
+                )
 
                 st.markdown('<div class="section-title">What If Global del CSV</div>', unsafe_allow_html=True)
 
@@ -1572,7 +1639,8 @@ elif modo == "Predicción por CSV":
                     min_value=-20,
                     max_value=50,
                     value=0,
-                    step=5
+                    step=5,
+                    key="csv_slider_descuento_global"
                 )
 
                 ajuste_precio = st.slider(
@@ -1580,7 +1648,8 @@ elif modo == "Predicción por CSV":
                     min_value=-30,
                     max_value=50,
                     value=0,
-                    step=5
+                    step=5,
+                    key="csv_slider_precio_global"
                 )
 
                 df_escenario = df_modelo.copy()
@@ -1660,12 +1729,20 @@ elif modo == "Predicción por CSV":
                     font_color="white"
                 )
 
-                st.plotly_chart(fig_comp, use_container_width=True)
+                st.plotly_chart(
+                    fig_comp,
+                    use_container_width=True,
+                    key="csv_whatif_comparativo_original"
+                )
 
-                mostrar_graficos_avanzados(df_escenario, "Treemap y dona del escenario What If global")
+                mostrar_graficos_avanzados(
+                    df_escenario,
+                    "Treemap y dona del escenario What If global",
+                    key_prefix="csv_whatif_global_avanzado"
+                )
 
                 st.subheader("Tabla final con predicciones")
-                st.dataframe(df_resultados, use_container_width=True)
+                st.dataframe(df_resultados, use_container_width=True, key="csv_tabla_resultados")
 
                 csv_descarga = df_resultados.to_csv(index=False).encode("utf-8")
                 excel_descarga = convertir_excel(df_resultados)
@@ -1678,7 +1755,8 @@ elif modo == "Predicción por CSV":
                         data=csv_descarga,
                         file_name="resultados_prediccion.csv",
                         mime="text/csv",
-                        use_container_width=True
+                        use_container_width=True,
+                        key="download_csv_resultados"
                     )
 
                 with col_d2:
@@ -1687,7 +1765,8 @@ elif modo == "Predicción por CSV":
                         data=excel_descarga,
                         file_name="resultados_prediccion.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        use_container_width=True
+                        use_container_width=True,
+                        key="download_excel_resultados"
                     )
 
         except Exception as e:
@@ -1719,7 +1798,11 @@ else:
     st.code(str(type(modelo)))
 
     st.write("Columnas esperadas por el modelo:")
-    st.dataframe(pd.DataFrame({"Columnas": COLUMNAS_MODELO}), use_container_width=True)
+    st.dataframe(
+        pd.DataFrame({"Columnas": COLUMNAS_MODELO}),
+        use_container_width=True,
+        key="analisis_columnas_modelo"
+    )
 
     importancias = obtener_importancias_modelo(modelo)
 
@@ -1742,7 +1825,11 @@ else:
             font_color="white"
         )
 
-        st.plotly_chart(fig_imp, use_container_width=True)
+        st.plotly_chart(
+            fig_imp,
+            use_container_width=True,
+            key="analisis_importancias_modelo"
+        )
 
         variable_top = importancias.iloc[0]["Variable"]
 
@@ -1799,7 +1886,11 @@ else:
         ]
     })
 
-    st.dataframe(df_variables, use_container_width=True)
+    st.dataframe(
+        df_variables,
+        use_container_width=True,
+        key="analisis_tabla_variables"
+    )
 
     st.markdown(
         """
